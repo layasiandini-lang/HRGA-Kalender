@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Villa Selayang — Kalender Tugas Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root{
+  --cream:#FAF7F2;--warm-white:#FFFDF9;--sand:#E8E0D5;--stone:#C4B9AB;
+  --bark:#8B7355;--earth:#5C4A32;--forest:#3D6B58;--forest-light:#4D7D6A;
+  --gold:#B8945A;--gold-light:#D4AF7A;--sage:#7A9E8E;--rust:#C4624A;
+  --text-primary:#1A1410;--text-secondary:#6B5E4E;--text-muted:#9E8E7E;
+  --border:rgba(139,115,85,0.15);--border-strong:rgba(139,115,85,0.3);
+  --radius:12px;--radius-sm:8px;
+  --hr:#7F77DD;--hr-bg:#EEEDFE;--hr-border:#AFA9EC;--hr-text:#3C3489;
+  --op:#1D9E75;--op-bg:#E1F5EE;--op-border:#5DCAA5;--op-text:#085041;
+  --ga:#BA7517;--ga-bg:#FAEEDA;--ga-border:#EF9F27;--ga-text:#633806;
+  --sp:#E24B4A;--sp-bg:#FCEBEB;--sp-border:#F09595;--sp-text:#791F1F;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-primary);min-height:100vh;font-size:14px}
+.topbar{background:var(--warm-white);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.brand{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text-primary)}
+.brand-sub{font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.main-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 32px;background:var(--warm-white)}
+.main-tab{padding:10px 20px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--text-muted);border-bottom:2px solid transparent;font-family:'DM Sans',sans-serif;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.main-tab.active{color:var(--forest);border-bottom-color:var(--forest);font-weight:500}
+.main-tab:hover{color:var(--text-secondary)}
+.main-pane{display:none;padding:24px 32px}.main-pane.active{display:block}
+/* CHECKLIST */
+.today-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.today-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text-primary)}
+.today-date{font-size:13px;color:var(--text-muted);margin-top:3px}
+.progress-wrap{display:flex;align-items:center;gap:10px;margin-top:8px}
+.progress-bar{flex:1;height:6px;background:var(--sand);border-radius:3px;overflow:hidden;min-width:120px}
+.progress-fill{height:100%;background:var(--forest);border-radius:3px;transition:width 0.4s ease}
+.progress-label{font-size:12px;color:var(--text-muted);white-space:nowrap}
+.checklist-section{margin-bottom:20px}
+.checklist-section-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;transition:all 0.15s;cursor:pointer}
+.check-item:hover{border-color:var(--border-strong)}
+.check-item.done{opacity:0.5}
+.check-item.done .check-label{text-decoration:line-through;color:var(--text-muted)}
+.check-box{width:18px;height:18px;border:1.5px solid var(--border-strong);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;background:var(--cream)}
+.check-box.checked{background:var(--forest);border-color:var(--forest)}
+.check-box.checked::after{content:'✓';color:#fff;font-size:11px;font-weight:600}
+.check-label{font-size:13px;color:var(--text-primary);line-height:1.4;flex:1}
+.pill-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;margin-top:5px}
+.remove-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;padding:0 2px;opacity:0;transition:opacity 0.15s;flex-shrink:0}
+.check-item:hover .remove-btn{opacity:1}
+.add-task-row{display:flex;gap:8px;margin-top:8px}
+.add-task-input{flex:1;padding:9px 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--cream);font-size:13px;font-family:'DM Sans',sans-serif;outline:none}
+.add-task-input:focus{border-color:var(--forest)}
+.add-task-cat{padding:9px 10px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--cream);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;color:var(--text-secondary)}
+.btn-add{background:var(--forest);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+.btn-add:hover{background:var(--forest-light)}
+.notes-section{margin-top:20px}
+.notes-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
+.notes-input{width:100%;padding:12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--warm-white);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;resize:vertical;min-height:80px;color:var(--text-primary)}
+.notes-input:focus{border-color:var(--forest)}
+.save-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.btn-save{background:var(--forest);color:#fff;border:none;padding:9px 20px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer}
+.btn-save:hover{background:var(--forest-light)}
+.save-status{font-size:12px;color:var(--text-muted);font-style:italic}
+/* KALENDER */
+.cal-topbar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.month-nav{display:flex;align-items:center;gap:8px}
+.month-label{font-size:15px;font-weight:500;color:var(--text-primary);min-width:160px;text-align:center}
+.nav-btn{background:none;border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;color:var(--text-secondary);font-size:14px;font-family:'DM Sans',sans-serif}
+.nav-btn:hover{background:var(--sand)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary)}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.week-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.week-tab{padding:8px 16px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.week-tab.active{color:var(--text-primary);border-bottom-color:var(--forest);font-weight:500}
+.week-pane{display:none}.week-pane.active{display:block}
+.week-range{font-size:12px;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.last-week-badge{background:var(--gold-light);color:var(--earth);font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
+.grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.day-col{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.day-col.today{border-color:var(--forest);border-width:2px}
+.day-col.outside{opacity:0.3}
+.day-col.weekend-col{border-color:rgba(127,119,221,0.3)}
+.day-header{padding:12px 12px 10px;border-bottom:1px solid var(--border);background:var(--sand)}
+.day-col.today .day-header{background:rgba(61,107,88,0.1)}
+.day-col.today .day-name{color:var(--forest)}
+.day-col.today .day-date{color:var(--forest)}
+.day-col.weekend-col .day-header{background:rgba(127,119,221,0.06)}
+.day-name{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px}
+.day-date{font-size:22px;font-weight:500;color:var(--text-primary);line-height:1.1;font-family:'DM Serif Display',serif;margin:2px 0}
+.day-hours{font-size:10px;color:var(--text-muted)}
+.day-tasks{padding:10px}
+.task-pill{display:block;padding:5px 8px;border-radius:6px;font-size:11px;line-height:1.45;margin-bottom:5px;border:0.5px solid transparent}
+.task-pill:last-child{margin-bottom:0}
+.pill-hr{background:var(--hr-bg);color:var(--hr-text);border-color:var(--hr-border)}
+.pill-op{background:var(--op-bg);color:var(--op-text);border-color:var(--op-border)}
+.pill-ga{background:var(--ga-bg);color:var(--ga-text);border-color:var(--ga-border)}
+.pill-special{background:var(--sp-bg);color:var(--sp-text);border-color:var(--sp-border)}
+.no-task{font-size:11px;color:var(--text-muted);font-style:italic;padding:4px 0;text-align:center}
+.divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+.section-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.adlib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.adlib-card{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.adlib-cat{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.adlib-item{font-size:12px;color:var(--text-secondary);padding:5px 0;border-bottom:0.5px solid var(--border);display:flex;align-items:flex-start;gap:7px;line-height:1.45}
+.adlib-item:last-child{border-bottom:none}
+.adlib-item i{font-size:13px;flex-shrink:0;margin-top:1px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="brand">Villa Selayang</div>
+    <div class="brand-sub">Kalender & Checklist Admin</div>
+  </div>
+  <div id="topbar-date" style="font-size:13px;color:var(--text-muted)"></div>
+</div>
+
+<div class="main-tabs">
+  <button class="main-tab active" onclick="switchMain('checklist')" id="mtab-checklist">
+    <i class="ti ti-checks"></i> Checklist hari ini
+  </button>
+  <button class="main-tab" onclick="switchMain('kalender')" id="mtab-kalender">
+    <i class="ti ti-calendar"></i> Kalender bulanan
+  </button>
+</div>
+
+<!-- CHECKLIST PANE -->
+<div class="main-pane active" id="mpane-checklist">
+  <div class="today-header">
+    <div>
+      <div class="today-title" id="cl-title">Checklist hari ini</div>
+      <div class="today-date" id="cl-date"></div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        <div class="progress-label" id="progress-label">0 / 0 selesai</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="checklist-body"></div>
+
+  <div style="margin-top:16px">
+    <div class="checklist-section-title"><i class="ti ti-plus" style="font-size:14px"></i> Tambah tugas manual</div>
+    <div class="add-task-row">
+      <input type="text" class="add-task-input" id="new-task-input" placeholder="Tulis tugas tambahan...">
+      <select class="add-task-cat" id="new-task-cat">
+        <option value="hr">HR</option>
+        <option value="op" selected>Operasional</option>
+        <option value="ga">GA</option>
+        <option value="special">Khusus</option>
+      </select>
+      <button class="btn-add" onclick="addManualTask()"><i class="ti ti-plus"></i> Tambah</button>
+    </div>
+  </div>
+
+  <div class="notes-section">
+    <div class="notes-label"><i class="ti ti-notes" style="font-size:13px;margin-right:5px"></i>Catatan harian</div>
+    <textarea class="notes-input" id="daily-notes" placeholder="Tulis catatan, kendala, atau hal penting hari ini..."></textarea>
+    <div class="save-row">
+      <button class="btn-save" onclick="saveChecklist()"><i class="ti ti-device-floppy"></i> Simpan</button>
+      <span class="save-status" id="save-status"></span>
+    </div>
+  </div>
+</div>
+
+<!-- KALENDER PANE -->
+<div class="main-pane" id="mpane-kalender">
+  <div class="cal-topbar">
+    <div class="month-nav">
+      <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+      <div class="month-label" id="month-label"></div>
+      <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
+    </div>
+  </div>
+  <div class="legend">
+    <span style="font-size:12px;color:var(--text-muted)">Keterangan:</span>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--hr)"></div>HR</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--op)"></div>Operasional</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ga)"></div>GA</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--sp)"></div>Khusus/Bulanan</div>
+  </div>
+  <div class="week-tabs" id="week-tabs"></div>
+  <div id="week-panes"></div>
+
+  <div class="divider"></div>
+  <div class="section-title"><i class="ti ti-list-check" style="font-size:15px"></i>Tugas bila diperlukan</div>
+  <div class="adlib-grid">
+    <div class="adlib-card">
+      <div class="adlib-cat" style="color:var(--hr-text)">HR</div>
+      <div class="adlib-item"><i class="ti ti-speakerphone" style="color:var(--hr)"></i>Pembuatan pemberitahuan</div>
+      <div class="adlib-item"><i class="ti ti-user-plus" style="color:var(--hr)"></i>Recruitment</div>
+      <div class="adlib-item"><i class="ti ti-door-enter" style="color:var(--hr)"></i>On boarding karyawan baru</div>
+      <div class="adlib-item"><i class="ti ti-door-exit" style="color:var(--hr)"></i>Off boarding karyawan</div>
+      <div class="adlib-item"><i class="ti ti-file-text" style="color:var(--hr)"></i>Dokumentasi SOP & peraturan</div>
+    </div>
+    <div class="adlib-card">
+      <div class="adlib-cat" style="color:var(--op-text)">Operasional</div>
+      <div class="adlib-item"><i class="ti ti-speakerphone" style="color:var(--op)"></i>Pembuatan pemberitahuan</div>
+      <div class="adlib-item"><i class="ti ti-tool" style="color:var(--op)"></i>Monitoring maintenance & kerusakan</div>
+    </div>
+    <div class="adlib-card">
+      <div class="adlib-cat" style="color:var(--ga-text)">GA</div>
+      <div class="adlib-item"><i class="ti ti-speakerphone" style="color:var(--ga)"></i>Pembuatan pemberitahuan</div>
+      <div class="adlib-item"><i class="ti ti-building" style="color:var(--ga)"></i>Monitoring aset kantor & villa</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DAYS_ID=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const DAYS_SHORT=['Sen','Sel','Rab','Kam','Jum'];
+const LS_PREFIX='selayang_checklist_';
+
+let calYear=new Date().getFullYear();
+let calMonth=new Date().getMonth();
+let calTab=0;
+
+function todayStr(){return new Date().toISOString().slice(0,10);}
+
+// ---- MAIN TABS ----
+function switchMain(name){
+  document.querySelectorAll('.main-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('mpane-'+name).classList.add('active');
+  document.getElementById('mtab-'+name).classList.add('active');
+  if(name==='kalender') renderKalender();
+}
+
+// ---- TASK LOGIC ----
+function getWeekNumber(date){
+  const jan1=new Date(date.getFullYear(),0,1);
+  return Math.ceil(((date-jan1)/86400000+jan1.getDay()+1)/7);
+}
+
+function getAutoTasks(date){
+  const tasks=[];
+  const dow=date.getDay(),dom=date.getDate();
+  const isWknd=dow===0||dow===6;
+  const isEven=getWeekNumber(date)%2===0;
+
+  if(isWknd){
+    tasks.push({label:'Rekap room worksheet',cat:'op'});
+    tasks.push(isEven
+      ?{label:'Rekap project (minggu genap)',cat:'op'}
+      :{label:'Materi training karyawan (minggu ganjil)',cat:'hr'});
+    const lastDayM=new Date(date.getFullYear(),date.getMonth()+1,0).getDate();
+    let lastSat=lastDayM;
+    for(let d=lastDayM;d>=1;d--){
+      const dd=new Date(date.getFullYear(),date.getMonth(),d).getDay();
+      if(dd===6||dd===0){lastSat=d;break;}
+    }
+    if(dom>=lastSat-1){
+      tasks.push({label:'Feedback pegawai bulanan',cat:'special'});
+      tasks.push({label:'Penilaian best employee',cat:'special'});
+      if([2,5,8,11].includes(date.getMonth())) tasks.push({label:'PPT Townhall (kuartal akhir)',cat:'special'});
+    }
+    return tasks;
+  }
+
+  tasks.push({label:'Rekap guest review harian',cat:'op'});
+  tasks.push({label:'Rekap guest feedback harian',cat:'op'});
+  tasks.push({label:'Update absensi & manning harian',cat:'hr'});
+  if(dow===1||dow===4) tasks.push({label:'Laporan manning (HK, FO, FB, Garden, Security, HO)',cat:'hr'});
+  if(dow===3){
+    tasks.push({label:'Rekap absensi mingguan (lembur, libur, sakit, cuti)',cat:'hr'});
+    tasks.push({label:'Rekap room worksheet',cat:'op'});
+  }
+  if(dom>=25&&dom<=29) tasks.push({label:'Cut off & perhitungan gaji',cat:'special'});
+  return tasks;
+}
+
+// ---- CHECKLIST RENDER ----
+const CAT_COLORS={hr:'var(--hr)',op:'var(--op)',ga:'var(--ga)',special:'var(--sp)'};
+const CAT_LABELS={hr:'HR',op:'Operasional',ga:'GA',special:'Khusus'};
+
+function loadState(){
+  const key=LS_PREFIX+todayStr();
+  try{return JSON.parse(localStorage.getItem(key))||null;}catch(e){return null;}
+}
+
+function saveState(state){
+  localStorage.setItem(LS_PREFIX+todayStr(),JSON.stringify(state));
+}
+
+function initChecklist(){
+  const today=new Date();
+  const dow=today.getDay();
+  const isWknd=dow===0||dow===6;
+  document.getElementById('topbar-date').textContent=DAYS_ID[dow]+', '+today.getDate()+' '+MONTHS[today.getMonth()]+' '+today.getFullYear();
+  document.getElementById('cl-date').textContent=DAYS_ID[dow]+', '+today.getDate()+' '+MONTHS[today.getMonth()]+' '+today.getFullYear()+(isWknd?' · 09.00–14.00':' · 08.00–18.00');
+
+  let state=loadState();
+  if(!state){
+    const autoTasks=getAutoTasks(today);
+    state={
+      tasks:autoTasks.map((t,i)=>({id:'auto_'+i,label:t.label,cat:t.cat,done:false,auto:true})),
+      manualTasks:[],
+      notes:''
+    };
+    saveState(state);
+  }
+  renderChecklist(state);
+}
+
+function renderChecklist(state){
+  const allTasks=[...state.tasks,...state.manualTasks];
+  const total=allTasks.length;
+  const done=allTasks.filter(t=>t.done).length;
+  const pct=total>0?Math.round((done/total)*100):0;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-label').textContent=done+' / '+total+' selesai';
+
+  const cats={hr:[],op:[],ga:[],special:[]};
+  allTasks.forEach(t=>{
+    if(cats[t.cat]) cats[t.cat].push(t);
+    else cats['op'].push(t);
+  });
+
+  let html='';
+  Object.entries(cats).forEach(([cat,tasks])=>{
+    if(!tasks.length) return;
+    html+=`<div class="checklist-section">
+      <div class="checklist-section-title">
+        <div style="width:8px;height:8px;border-radius:2px;background:${CAT_COLORS[cat]};flex-shrink:0"></div>
+        ${CAT_LABELS[cat]}
+      </div>`;
+    tasks.forEach(t=>{
+      html+=`<div class="check-item${t.done?' done':''}" onclick="toggleTask('${t.id}')">
+        <div class="check-box${t.done?' checked':''}"></div>
+        <div class="pill-dot" style="background:${CAT_COLORS[t.cat]||CAT_COLORS.op}"></div>
+        <div class="check-label">${t.label}</div>
+        ${!t.auto?`<button class="remove-btn" onclick="removeTask(event,'${t.id}')"><i class="ti ti-x"></i></button>`:''}
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('checklist-body').innerHTML=html;
+  document.getElementById('daily-notes').value=state.notes||'';
+}
+
+function toggleTask(id){
+  let state=loadState();
+  const task=[...state.tasks,...state.manualTasks].find(t=>t.id===id);
+  if(task) task.done=!task.done;
+  saveState(state);
+  renderChecklist(state);
+}
+
+function removeTask(e,id){
+  e.stopPropagation();
+  let state=loadState();
+  state.manualTasks=state.manualTasks.filter(t=>t.id!==id);
+  saveState(state);
+  renderChecklist(state);
+}
+
+function addManualTask(){
+  const input=document.getElementById('new-task-input');
+  const cat=document.getElementById('new-task-cat').value;
+  const label=input.value.trim();
+  if(!label) return;
+  let state=loadState();
+  state.manualTasks.push({id:'manual_'+Date.now(),label,cat,done:false,auto:false});
+  saveState(state);
+  renderChecklist(state);
+  input.value='';
+}
+
+function saveChecklist(){
+  let state=loadState();
+  state.notes=document.getElementById('daily-notes').value;
+  saveState(state);
+  const s=document.getElementById('save-status');
+  s.textContent='Tersimpan '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  setTimeout(()=>s.textContent='',3000);
+}
+
+document.getElementById('new-task-input').addEventListener('keydown',function(e){
+  if(e.key==='Enter') addManualTask();
+});
+
+// ---- KALENDER ----
+function getWeekdayTasksCal(date){
+  const tasks=[];
+  const dow=date.getDay(),dom=date.getDate();
+  tasks.push({label:'Rekap guest review harian',pill:'pill-op'});
+  tasks.push({label:'Rekap guest feedback harian',pill:'pill-op'});
+  tasks.push({label:'Update absensi & manning harian',pill:'pill-hr'});
+  if(dow===1||dow===4) tasks.push({label:'Laporan manning (HK, FO, FB, Garden, Security, HO)',pill:'pill-hr'});
+  if(dow===3){
+    tasks.push({label:'Rekap absensi mingguan (lembur, libur, sakit, cuti)',pill:'pill-hr'});
+    tasks.push({label:'Rekap room worksheet',pill:'pill-op'});
+  }
+  if(dom>=25&&dom<=29) tasks.push({label:'Cut off & perhitungan gaji',pill:'pill-special'});
+  return tasks;
+}
+
+function getWeekendTasksCal(weekIdx,totalWeeks,weekNum){
+  const isEven=weekNum%2===0;
+  const isLast=weekIdx===totalWeeks-1;
+  const tasks=[];
+  tasks.push({label:'Rekap room worksheet',pill:'pill-op'});
+  tasks.push(isEven?{label:'Rekap project (minggu genap)',pill:'pill-op'}:{label:'Materi training karyawan (minggu ganjil)',pill:'pill-hr'});
+  if(isLast){
+    tasks.push({label:'Feedback pegawai bulanan',pill:'pill-special'});
+    tasks.push({label:'Penilaian best employee',pill:'pill-special'});
+    if([2,5,8,11].includes(calMonth)) tasks.push({label:'PPT Townhall (kuartal akhir)',pill:'pill-special'});
+  }
+  return tasks;
+}
+
+function buildWeeks(year,month){
+  const firstDay=new Date(year,month,1);
+  const lastDay=new Date(year,month+1,0);
+  const weeks=[];
+  let weekStart=new Date(firstDay);
+  const sd=firstDay.getDay();
+  if(sd!==1) weekStart.setDate(weekStart.getDate()-(sd===0?6:sd-1));
+  while(weekStart<=lastDay){
+    const weekdays=[];
+    for(let i=0;i<5;i++){
+      const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);weekdays.push(d);
+    }
+    weeks.push({weekdays,weekNum:getWeekNumber(weekStart)});
+    weekStart.setDate(weekStart.getDate()+7);
+  }
+  return weeks;
+}
+
+function renderKalender(){
+  document.getElementById('month-label').textContent=MONTHS[calMonth]+' '+calYear;
+  const weeks=buildWeeks(calYear,calMonth);
+  const today=new Date();today.setHours(0,0,0,0);
+
+  document.getElementById('week-tabs').innerHTML=weeks.map((_,i)=>
+    `<button class="week-tab${i===calTab?' active':''}" onclick="switchWeekTab(${i})">Minggu ${i+1}</button>`
+  ).join('');
+
+  document.getElementById('week-panes').innerHTML=weeks.map((week,idx)=>{
+    const isLast=idx===weeks.length-1;
+    const inMonthDays=week.weekdays.filter(d=>d.getMonth()===calMonth&&d.getFullYear()===calYear);
+    const rs=inMonthDays[0]||week.weekdays[0];
+    const re=inMonthDays[inMonthDays.length-1]||week.weekdays[week.weekdays.length-1];
+    const range=`${rs.getDate()}–${re.getDate()} ${MONTHS[calMonth]} ${calYear} + Weekend`;
+
+    const dayCols=week.weekdays.map(date=>{
+      const d=new Date(date);d.setHours(0,0,0,0);
+      const inMonth=date.getMonth()===calMonth&&date.getFullYear()===calYear;
+      const isToday=d.getTime()===today.getTime();
+      const tasks=inMonth?getWeekdayTasksCal(date):[];
+      const dow=date.getDay();
+      return `<div class="day-col${isToday?' today':''}${!inMonth?' outside':''}">
+        <div class="day-header">
+          <div class="day-name">${DAYS_SHORT[dow-1]}</div>
+          <div class="day-date">${date.getDate()}</div>
+          <div class="day-hours">${inMonth?'08.00–18.00':'—'}</div>
+        </div>
+        <div class="day-tasks">
+          ${!inMonth?'<div class="no-task">Luar bulan ini</div>':tasks.map(t=>`<span class="task-pill ${t.pill}">${t.label}</span>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    const wkndTasks=getWeekendTasksCal(idx,weeks.length,week.weekNum);
+    const weekendCol=`<div class="day-col weekend-col">
+      <div class="day-header">
+        <div class="day-name">Weekend${isLast?' ★':''}</div>
+        <div class="day-date" style="font-size:12px;margin-top:3px;line-height:1.4;font-family:'DM Sans',sans-serif;font-weight:400">Sab atau Min</div>
+        <div class="day-hours">09.00–14.00 · sesuai giliran</div>
+      </div>
+      <div class="day-tasks">${wkndTasks.map(t=>`<span class="task-pill ${t.pill}">${t.label}</span>`).join('')}</div>
+    </div>`;
+
+    return `<div class="week-pane${idx===calTab?' active':''}" id="wpane-${idx}">
+      <div class="week-range">${range}${isLast?'<span class="last-week-badge">★ Weekend terakhir bulan</span>':''}</div>
+      <div class="grid">${dayCols}${weekendCol}</div>
+    </div>`;
+  }).join('');
+}
+
+function switchWeekTab(idx){
+  calTab=idx;
+  document.querySelectorAll('.week-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.week-pane').forEach((p,i)=>p.classList.toggle('active',i===idx));
+}
+
+function changeMonth(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  calTab=0;
+  renderKalender();
+}
+
+initChecklist();
+</script>
+</body>
+</html>
