@@ -64,6 +64,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-p
 .btn-save{background:var(--forest);color:#fff;border:none;padding:9px 20px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer}
 .btn-save:hover{background:var(--forest-light)}
 .save-status{font-size:12px;color:var(--text-muted);font-style:italic}
+.btn-ringkasan{background:var(--gold);color:#fff;border:none;padding:9px 20px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-ringkasan:hover{background:var(--gold-light)}
+.ringkasan-overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,0.5);z-index:200;align-items:center;justify-content:center;padding:20px}
+.ringkasan-overlay.show{display:flex}
+.ringkasan-box{background:var(--warm-white);border-radius:var(--radius);padding:28px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto}
+.ringkasan-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.ringkasan-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text-primary)}
+.ringkasan-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:18px;padding:4px}
+.ringkasan-content{background:var(--cream);border-radius:var(--radius-sm);padding:16px;font-size:13px;line-height:1.7;color:var(--text-primary);white-space:pre-wrap;font-family:'DM Sans',sans-serif}
+.ringkasan-actions{display:flex;gap:8px;margin-top:14px}
+.btn-copy{background:var(--forest);color:#fff;border:none;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-copy:hover{background:var(--forest-light)}
+.copy-hint{font-size:11px;color:var(--text-muted);font-style:italic;margin-top:8px}
 /* KALENDER */
 .cal-topbar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .month-nav{display:flex;align-items:center;gap:8px}
@@ -163,7 +176,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-p
     <textarea class="notes-input" id="daily-notes" placeholder="Tulis catatan, kendala, atau hal penting hari ini..."></textarea>
     <div class="save-row">
       <button class="btn-save" onclick="saveChecklist()"><i class="ti ti-device-floppy"></i> Simpan</button>
+      <button class="btn-ringkasan" onclick="generateRingkasan()"><i class="ti ti-file-text"></i> Generate ringkasan</button>
       <span class="save-status" id="save-status"></span>
+    </div>
+  </div>
+</div>
+
+<div class="ringkasan-overlay" id="ringkasan-overlay" onclick="closeRingkasan(event)">
+  <div class="ringkasan-box" id="ringkasan-box">
+    <div class="ringkasan-header">
+      <div class="ringkasan-title">Ringkasan harian</div>
+      <button class="ringkasan-close" onclick="document.getElementById('ringkasan-overlay').classList.remove('show')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="ringkasan-content" id="ringkasan-content"></div>
+    <div class="copy-hint">Screenshot bagian ini untuk dikirim ke WhatsApp</div>
+    <div class="ringkasan-actions">
+      <button class="btn-copy" onclick="copyRingkasan()"><i class="ti ti-copy"></i> Copy teks</button>
     </div>
   </div>
 </div>
@@ -370,6 +398,61 @@ function addManualTask(){
   saveState(state);
   renderChecklist(state);
   input.value='';
+}
+
+function generateRingkasan(){
+  saveChecklist();
+  const state=loadState();
+  const today=new Date();
+  const DAYS_ID2=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const allTasks=[...state.tasks,...state.manualTasks];
+  const total=allTasks.length;
+  const done=allTasks.filter(t=>t.done).length;
+  const pct=total>0?Math.round((done/total)*100):0;
+  const dateStr=DAYS_ID2[today.getDay()]+', '+today.getDate()+' '+MONTHS[today.getMonth()]+' '+today.getFullYear();
+
+  const CAT_LABELS2={hr:'HR',op:'Operasional',ga:'GA',special:'Khusus/Bulanan'};
+  const cats={hr:[],op:[],ga:[],special:[]};
+  allTasks.forEach(t=>{if(cats[t.cat])cats[t.cat].push(t);else cats.op.push(t);});
+
+  let txt='';
+  txt+='📋 LAPORAN HARIAN ADMIN\n';
+  txt+='Villa Selayang\n';
+  txt+='━━━━━━━━━━━━━━━━━━━━\n';
+  txt+=dateStr+'\n';
+  txt+='━━━━━━━━━━━━━━━━━━━━\n\n';
+  txt+='📊 Progress: '+done+'/'+total+' tugas ('+pct+'%)\n\n';
+
+  Object.entries(cats).forEach(([cat,tasks])=>{
+    if(!tasks.length) return;
+    txt+='【'+CAT_LABELS2[cat]+'】\n';
+    tasks.forEach(t=>{
+      txt+=(t.done?'✅':'⬜')+' '+t.label+'\n';
+    });
+    txt+='\n';
+  });
+
+  if(state.notes&&state.notes.trim()){
+    txt+='📝 Catatan:\n'+state.notes.trim()+'\n';
+  }
+  txt+='\n━━━━━━━━━━━━━━━━━━━━';
+
+  document.getElementById('ringkasan-content').textContent=txt;
+  document.getElementById('ringkasan-overlay').classList.add('show');
+}
+
+function closeRingkasan(e){
+  if(e.target===document.getElementById('ringkasan-overlay'))
+    document.getElementById('ringkasan-overlay').classList.remove('show');
+}
+
+function copyRingkasan(){
+  const txt=document.getElementById('ringkasan-content').textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('.btn-copy');
+    btn.innerHTML='<i class="ti ti-check"></i> Tersalin!';
+    setTimeout(()=>btn.innerHTML='<i class="ti ti-copy"></i> Copy teks',2000);
+  });
 }
 
 function saveChecklist(){
